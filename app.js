@@ -404,6 +404,7 @@
     _on('btnDeleteProfile',   'click', _deleteProfile);
     _on('btnDownloadPNG',     'click', () => _download('png'));
     _on('btnDownloadJPEG',    'click', () => _download('jpeg'));
+    _on('btnCopyToClipboard', 'click', _copyToClipboard);
     _on('importProfileInput', 'change', _importProfileFromInput);
 
     if (profileSelect) {
@@ -700,6 +701,41 @@
       }, 'image/jpeg', 0.94);
       showToast('JPEG downloaded!', 'success');
     }
+  }
+
+  function _copyToClipboard() {
+    if (!outputCanvas) return;
+
+    const originalShowRules = options.showRules !== false;
+    const text = textInput ? textInput.value : '';
+
+    // Temporarily render without ruled lines so we copy clean handwriting
+    HandwritingEngine.render(outputCanvas, text, activeProfile, { ...options, showRules: false });
+
+    outputCanvas.toBlob(blob => {
+      // Restore ruled lines back on the preview canvas
+      HandwritingEngine.render(outputCanvas, text, activeProfile, { ...options, showRules: originalShowRules });
+
+      if (!blob) {
+        showToast('Failed to generate image blob.', 'error');
+        return;
+      }
+
+      // Check if navigator.clipboard.write is supported
+      if (!navigator.clipboard || !navigator.clipboard.write) {
+        showToast('Clipboard copy is not supported in this browser context.', 'error');
+        return;
+      }
+
+      const item = new ClipboardItem({ [blob.type]: blob });
+      navigator.clipboard.write([item])
+        .then(() => {
+          showToast('Copied handwriting image to clipboard! 📋', 'success');
+        })
+        .catch(err => {
+          showToast('Failed to copy: ' + err.message, 'error');
+        });
+    }, 'image/png');
   }
 
   function _triggerDownload(blob, filename) {
