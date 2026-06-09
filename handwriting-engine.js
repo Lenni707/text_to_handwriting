@@ -57,11 +57,11 @@ const HandwritingEngine = (() => {
       const cp2x = p2.x - (p3.x - p1.x) / 6;
       const cp2y = p2.y - (p3.y - p1.y) / 6;
 
-      // Pressure interpolation: thin at ends, thick in middle
+      // Pressure interpolation: clean, digital feel with subtle weight variation
       const t = points.length > 2 ? i / (points.length - 2) : 0.5;
       const pressureBell = Math.sin(Math.PI * t);
       const p = (p1.pressure || 0.5);
-      const pressure = p * 0.4 + pressureBell * p * 0.6;
+      const pressure = 0.85 + (p - 0.5) * 0.3 + pressureBell * 0.15;
 
       ctx.beginPath();
       ctx.lineWidth = Math.max(0.5, lineWidth * pressure);
@@ -95,8 +95,6 @@ const HandwritingEngine = (() => {
   }
 
   // Draw a single character's strokes onto the context at position (x, y)
-  // charData: array of strokes, each stroke is array of {x,y,pressure} (normalized 0-1)
-  // fontSize: target pixel height for the character
   function renderChar(ctx, charData, x, y, fontSize, slantAngle, jitterAmount, inkColor, charSeed) {
     if (!charData || charData.length === 0) return { width: fontSize * 0.55 };
 
@@ -105,23 +103,41 @@ const HandwritingEngine = (() => {
     const scaleY = fontSize;
     const scaleX = fontSize * (400 / 300);
 
-    // Effective character width
-    const charWidth = Math.max(bounds.w * scaleX, fontSize * 0.2);
+    // Character-level transformations for natural variation (rotation, scale, offsets)
+    // rather than shaky, high-frequency point jitter
+    const dx = (rng() - 0.5) * jitterAmount * fontSize * 0.12;
+    const dy = (rng() - 0.5) * jitterAmount * fontSize * 0.08;
+    const scaleXVar = 1.0 + (rng() - 0.5) * jitterAmount * 0.08;
+    const scaleYVar = 1.0 + (rng() - 0.5) * jitterAmount * 0.08;
+    const rotateVar = (rng() - 0.5) * jitterAmount * 0.05; // radians
+
+    const charWidth = Math.max(bounds.w * scaleX * scaleXVar, fontSize * 0.25);
     const slantRad = (slantAngle * Math.PI) / 180;
 
     ctx.save();
-    // Apply slant as a horizontal shear
+    // Apply slant as horizontal shear + translate to local character origin
     ctx.transform(1, 0, Math.tan(slantRad), 1, x, y);
+
+    const cosR = Math.cos(rotateVar);
+    const sinR = Math.sin(rotateVar);
 
     for (const stroke of charData) {
       if (!stroke || stroke.length === 0) continue;
 
-      // Transform normalized coords to canvas coords
+      // Transform normalized coords with character-level rotation & scaling
       const transformed = stroke.map((pt) => {
-        const sx = (pt.x - bounds.minX) * scaleX;
-        const sy = (pt.y - 0.7) * scaleY;
-        const jitter = jitterAmount * fontSize * 0.08;
-        const jp = jitterPoint(sx, sy, jitter, rng);
+        // 1. Initial scale from normalized space
+        const sxRaw = (pt.x - bounds.minX) * scaleX * scaleXVar;
+        const syRaw = (pt.y - 0.7) * scaleY * scaleYVar;
+
+        // 2. Rotate around character anchor point
+        const rx = sxRaw * cosR - syRaw * sinR;
+        const ry = sxRaw * sinR + syRaw * cosR;
+
+        // 3. Add character offset + tiny hand micro-jitter for natural feel
+        const microJitter = jitterAmount * fontSize * 0.006;
+        const jp = jitterPoint(rx + dx, ry + dy, microJitter, rng);
+
         return {
           x: jp.x,
           y: jp.y,
@@ -129,7 +145,7 @@ const HandwritingEngine = (() => {
         };
       });
 
-      drawSmoothStroke(ctx, transformed, fontSize * 0.04, inkColor);
+      drawSmoothStroke(ctx, transformed, fontSize * 0.038, inkColor);
     }
 
     ctx.restore();
@@ -145,10 +161,10 @@ const HandwritingEngine = (() => {
     ctx.strokeStyle = inkColor;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
-    ctx.globalAlpha = 0.5;
-    // Slight curve downward for natural look
+    ctx.globalAlpha = 0.75; // match digital ink opacity better
+    // Curved connector
     const cpX = (fromX + toX) / 2;
-    const cpY = Math.max(fromY, toY) + lineWidth * 3;
+    const cpY = Math.max(fromY, toY) + lineWidth * 2;
     ctx.moveTo(fromX, fromY);
     ctx.quadraticCurveTo(cpX, cpY, toX, toY);
     ctx.stroke();
