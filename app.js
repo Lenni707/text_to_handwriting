@@ -24,6 +24,7 @@
     slantAngle: -5,
     jitter: 30,
     baselineJitter: 3,
+    strokeWidth: 1.0,
     penStyle: 'digital',
     inkColor: '#1a2744',
     cursive: false,
@@ -41,6 +42,7 @@
 
   const sliders = {
     fontSize:      document.getElementById('sliderFontSize'),
+    strokeWidth:   document.getElementById('sliderStrokeWidth'),
     lineSpacing:   document.getElementById('sliderLineSpacing'),
     letterSpacing: document.getElementById('sliderLetterSpacing'),
     slantAngle:    document.getElementById('sliderSlantAngle'),
@@ -50,6 +52,7 @@
 
   const sliderValues = {
     fontSize:      document.getElementById('valFontSize'),
+    strokeWidth:   document.getElementById('valStrokeWidth'),
     lineSpacing:   document.getElementById('valLineSpacing'),
     letterSpacing: document.getElementById('valLetterSpacing'),
     slantAngle:    document.getElementById('valSlantAngle'),
@@ -105,6 +108,7 @@
     // Sync slider elements to options
     const map = [
       ['fontSize',      v => `${v}px`],
+      ['strokeWidth',   v => `${parseFloat(v).toFixed(1)}x`],
       ['lineSpacing',   v => parseFloat(v).toFixed(1)],
       ['letterSpacing', v => `${v}px`],
       ['slantAngle',    v => `${v}°`],
@@ -131,6 +135,7 @@
   function _bindSliders() {
     const map = [
       ['fontSize',      'fontSize',      v => `${Math.round(v)}px`,             parseFloat],
+      ['strokeWidth',   'strokeWidth',   v => `${parseFloat(v).toFixed(1)}x`,   parseFloat],
       ['lineSpacing',   'lineSpacing',   v => parseFloat(v).toFixed(1),         parseFloat],
       ['letterSpacing', 'letterSpacing', v => `${Math.round(v)}px`,             parseInt],
       ['slantAngle',    'slantAngle',    v => `${Math.round(v)}°`,              parseInt],

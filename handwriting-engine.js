@@ -106,7 +106,7 @@ const HandwritingEngine = (() => {
   }
 
   // Draw a single character's strokes onto the context at position (x, y)
-  function renderChar(ctx, charData, x, y, fontSize, slantAngle, jitterAmount, inkColor, charSeed, penStyle = 'digital') {
+  function renderChar(ctx, charData, x, y, fontSize, slantAngle, jitterAmount, inkColor, charSeed, penStyle = 'digital', strokeWidth = 1.0) {
     if (!charData || charData.length === 0) return { width: fontSize * 0.55 };
 
     const rng = seededRandom(charSeed);
@@ -156,7 +156,7 @@ const HandwritingEngine = (() => {
         };
       });
 
-      drawSmoothStroke(ctx, transformed, fontSize * 0.038, inkColor, penStyle);
+      drawSmoothStroke(ctx, transformed, fontSize * 0.038 * strokeWidth, inkColor, penStyle);
     }
 
     ctx.restore();
@@ -197,6 +197,7 @@ const HandwritingEngine = (() => {
       slantAngle = -5,
       jitter = 20,
       baselineJitter = 3,
+      strokeWidth = 1.0,
       penStyle = 'digital',
       inkColor = '#1a2744',
       cursive = false,
@@ -319,7 +320,7 @@ const HandwritingEngine = (() => {
         const charSeed = charSeedBase++ + ch.charCodeAt(0) * 31;
 
         if (charData && charData.length > 0) {
-          const result = renderChar(ctx, charData, curX, charY, fontSize, slantAngle, jitter / 25, inkColor, charSeed, penStyle);
+          const result = renderChar(ctx, charData, curX, charY, fontSize, slantAngle, jitter / 25, inkColor, charSeed, penStyle, strokeWidth);
           const charW = result.width;
 
           // Cursive connectors
