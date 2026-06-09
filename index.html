@@ -236,34 +236,19 @@
             </div>
           </div>
 
-          <div style="padding: 8px 0; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); margin: 8px 0;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-              <span class="toggle-label">Ink Color</span>
-              <div class="ink-colors-container">
-                <button type="button" class="color-preset" data-color="#1a2744" style="background-color: #1a2744;" title="Navy Blue" aria-label="Navy Blue"></button>
-                <button type="button" class="color-preset" data-color="#1c1c21" style="background-color: #1c1c21;" title="Gel Black" aria-label="Gel Black"></button>
-                <button type="button" class="color-preset" data-color="#1e4620" style="background-color: #1e4620;" title="Forest Green" aria-label="Forest Green"></button>
-                <button type="button" class="color-preset" data-color="#8f2020" style="background-color: #8f2020;" title="Classic Red" aria-label="Classic Red"></button>
-                <button type="button" class="color-preset" data-color="#6b21a8" style="background-color: #6b21a8;" title="Royal Purple" aria-label="Royal Purple"></button>
-                <!-- Hidden inputs to maintain legacy app.js bindings without throwing errors -->
-                <div class="color-picker-btn-wrap" style="display:none;">
-                  <input type="color" id="inputInkColor" value="#1a2744" title="Custom color" aria-label="Custom ink color picker" />
-                  <button type="button" class="color-preset custom-color-trigger" id="btnCustomColor" title="Custom Color" aria-label="Custom Color">
-                    <span class="color-rainbow-gradient"></span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Full Color Wheel Control -->
-            <div class="color-wheel-section" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; margin-top: 8px;">
-              <div id="colorWheel" class="color-wheel">
-                <div id="colorWheelHandle" class="color-wheel-handle"></div>
-              </div>
-              <div class="brightness-slider-wrap" style="width: 100%; display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                <label for="colorBrightness" class="slider-label" style="font-size: 11px; min-width: 60px; color: var(--text-secondary);">Brightness</label>
-                <input type="range" id="colorBrightness" min="5" max="95" value="30" class="brightness-slider" style="flex: 1;" aria-label="Ink brightness" />
-                <span id="valBrightness" style="font-size: 11px; min-width: 28px; text-align: right; color: var(--text-secondary);">30%</span>
+          <div class="toggle-item" style="margin-bottom: 8px;">
+            <span class="toggle-label">Ink Color</span>
+            <div class="ink-colors-container">
+              <button type="button" class="color-preset" data-color="#1a2744" style="background-color: #1a2744;" title="Navy Blue" aria-label="Navy Blue"></button>
+              <button type="button" class="color-preset" data-color="#1c1c21" style="background-color: #1c1c21;" title="Gel Black" aria-label="Gel Black"></button>
+              <button type="button" class="color-preset" data-color="#1e4620" style="background-color: #1e4620;" title="Forest Green" aria-label="Forest Green"></button>
+              <button type="button" class="color-preset" data-color="#8f2020" style="background-color: #8f2020;" title="Classic Red" aria-label="Classic Red"></button>
+              <button type="button" class="color-preset" data-color="#6b21a8" style="background-color: #6b21a8;" title="Royal Purple" aria-label="Royal Purple"></button>
+              <div class="color-picker-btn-wrap">
+                <input type="color" id="inputInkColor" value="#1a2744" title="Custom color" aria-label="Custom ink color picker" />
+                <button type="button" class="color-preset custom-color-trigger" id="btnCustomColor" title="Custom Color" aria-label="Custom Color">
+                  <span class="color-rainbow-gradient"></span>
+                </button>
               </div>
             </div>
           </div>
