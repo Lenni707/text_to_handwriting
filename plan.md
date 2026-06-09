@@ -13,6 +13,7 @@
   - `sample_profile.json`: A generated profile to quickly test application features.
 
 - **Recent Updates**:
+  - Added an interactive **HEX code input field** to display and directly type hexadecimal values to change the ink color in real-time.
   - Added a **Copy to Clipboard** option that exports a high-quality transparent PNG of the rendered handwriting directly to the system clipboard for immediate pasting without downloading files.
   - Fixed handwriting rendering blurriness by implementing High-DPI/Retina display scaling (using `window.devicePixelRatio` and canvas context transforms) on the preview canvas and downloaded image exports.
   - Added an **Ink Color** selection panel featuring 5 color presets and a custom color picker button (styled with a conic-gradient rainbow circle), saving selections to `localStorage`.
@@ -36,7 +37,7 @@
 - [x] Add a **Stroke Weight** slider to the editor (multiplier range `0.3x` to `3.0x`) to dynamically adjust pen line thickness independently from the font size.
 - [x] Rework the **Cursive Connectors** to smartly predict natural exit points (ignoring top accents/crossbars like in `t` or `f` and descender loops like in `g`) and natural entry points (leftmost points) of custom-drawn characters, adapting the connection curve shape based on connection height.
 - [x] Fix handwriting rendering blurriness by implementing High-DPI/Retina display scaling.
-- [x] Add an **Ink Color** selection panel (presets + custom color picker button).
+- [x] Add an **Ink Color** selection panel (presets + custom color picker button + HEX text input field).
 - [x] Add a **Copy to Clipboard** option to copy transparent PNGs directly instead of exporting to file.
 - [x] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
 

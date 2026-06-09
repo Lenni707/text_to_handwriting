@@ -129,7 +129,7 @@
     _updateInkColorUI(options.inkColor || '#1a2744');
   }
 
-  function _updateInkColorUI(color) {
+  function _updateInkColorUI(color, skipHexInput = false) {
     const presets = document.querySelectorAll('.color-preset[data-color]');
     let foundPreset = false;
     presets.forEach(p => {
@@ -154,6 +154,13 @@
       } else {
         customTrigger.classList.remove('active');
         customTrigger.style.background = 'conic-gradient(red, yellow, green, cyan, blue, magenta, red)';
+      }
+    }
+
+    if (!skipHexInput) {
+      const hexInput = document.getElementById('inputInkColorHex');
+      if (hexInput) {
+        hexInput.value = color.toUpperCase();
       }
     }
   }
@@ -237,6 +244,27 @@
       };
       colorInput.addEventListener('input', handleColorChange);
       colorInput.addEventListener('change', handleColorChange);
+    }
+
+    // Ink custom color HEX input field
+    const hexInput = document.getElementById('inputInkColorHex');
+    if (hexInput) {
+      const handleHexChange = () => {
+        let val = hexInput.value.trim();
+        if (val && !val.startsWith('#')) {
+          val = '#' + val;
+        }
+        // Match standard 3-char, 6-char, or 8-char HEX codes
+        const isValidHex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(val);
+        if (isValidHex) {
+          options.inkColor = val;
+          _updateInkColorUI(val, true); // skipHexInput = true to preserve user keyboard cursor/focus
+          _saveOptions();
+          _scheduleRender();
+        }
+      };
+      hexInput.addEventListener('input', handleHexChange);
+      hexInput.addEventListener('change', handleHexChange);
     }
   }
 

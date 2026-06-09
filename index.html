@@ -238,17 +238,23 @@
 
           <div class="toggle-item" style="margin-bottom: 8px;">
             <span class="toggle-label">Ink Color</span>
-            <div class="ink-colors-container">
-              <button type="button" class="color-preset" data-color="#1a2744" style="background-color: #1a2744;" title="Navy Blue" aria-label="Navy Blue"></button>
-              <button type="button" class="color-preset" data-color="#1c1c21" style="background-color: #1c1c21;" title="Gel Black" aria-label="Gel Black"></button>
-              <button type="button" class="color-preset" data-color="#1e4620" style="background-color: #1e4620;" title="Forest Green" aria-label="Forest Green"></button>
-              <button type="button" class="color-preset" data-color="#8f2020" style="background-color: #8f2020;" title="Classic Red" aria-label="Classic Red"></button>
-              <button type="button" class="color-preset" data-color="#6b21a8" style="background-color: #6b21a8;" title="Royal Purple" aria-label="Royal Purple"></button>
-              <div class="color-picker-btn-wrap">
-                <input type="color" id="inputInkColor" value="#1a2744" title="Custom color" aria-label="Custom ink color picker" />
-                <button type="button" class="color-preset custom-color-trigger" id="btnCustomColor" title="Custom Color" aria-label="Custom Color">
-                  <span class="color-rainbow-gradient"></span>
-                </button>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+              <div class="ink-colors-container">
+                <button type="button" class="color-preset" data-color="#1a2744" style="background-color: #1a2744;" title="Navy Blue" aria-label="Navy Blue"></button>
+                <button type="button" class="color-preset" data-color="#1c1c21" style="background-color: #1c1c21;" title="Gel Black" aria-label="Gel Black"></button>
+                <button type="button" class="color-preset" data-color="#1e4620" style="background-color: #1e4620;" title="Forest Green" aria-label="Forest Green"></button>
+                <button type="button" class="color-preset" data-color="#8f2020" style="background-color: #8f2020;" title="Classic Red" aria-label="Classic Red"></button>
+                <button type="button" class="color-preset" data-color="#6b21a8" style="background-color: #6b21a8;" title="Royal Purple" aria-label="Royal Purple"></button>
+                <div class="color-picker-btn-wrap">
+                  <input type="color" id="inputInkColor" value="#1a2744" title="Custom color" aria-label="Custom ink color picker" />
+                  <button type="button" class="color-preset custom-color-trigger" id="btnCustomColor" title="Custom Color" aria-label="Custom Color">
+                    <span class="color-rainbow-gradient"></span>
+                  </button>
+                </div>
+              </div>
+              <div class="hex-input-wrap" style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size: 11px; color: var(--text-tertiary);">HEX</span>
+                <input type="text" id="inputInkColorHex" value="#1a2744" placeholder="#1a2744" style="width: 78px; height: 26px; font-family: monospace; font-size: 11.5px; text-align: center; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text-primary); padding: 0 4px;" aria-label="Ink color hex code" />
               </div>
             </div>
           </div>
