@@ -185,6 +185,7 @@ const HandwritingEngine = (() => {
       letterSpacing = 2,
       slantAngle = -5,
       jitter = 20,
+      baselineJitter = 3,
       inkColor = '#1a2744',
       cursive = false,
       paperPadding = 48,
@@ -301,8 +302,8 @@ const HandwritingEngine = (() => {
         }
 
         const charData = chars[ch];
-        const baselineJitter = (lineRng() - 0.5) * 5;
-        const charY = baseY + baselineJitter;
+        const baselineOffset = (lineRng() - 0.5) * baselineJitter;
+        const charY = baseY + baselineOffset;
         const charSeed = charSeedBase++ + ch.charCodeAt(0) * 31;
 
         if (charData && charData.length > 0) {

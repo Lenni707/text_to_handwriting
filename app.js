@@ -23,6 +23,7 @@
     letterSpacing: 4,
     slantAngle: -5,
     jitter: 30,
+    baselineJitter: 3,
     inkColor: '#1a2744',
     cursive: false,
   };
@@ -43,6 +44,7 @@
     letterSpacing: document.getElementById('sliderLetterSpacing'),
     slantAngle:    document.getElementById('sliderSlantAngle'),
     jitter:        document.getElementById('sliderJitter'),
+    baselineJitter:document.getElementById('sliderBaselineJitter'),
   };
 
   const sliderValues = {
@@ -51,6 +53,7 @@
     letterSpacing: document.getElementById('valLetterSpacing'),
     slantAngle:    document.getElementById('valSlantAngle'),
     jitter:        document.getElementById('valJitter'),
+    baselineJitter:document.getElementById('valBaselineJitter'),
   };
 
   // ─── Init ─────────────────────────────────────────────────────────────────
@@ -105,6 +108,7 @@
       ['letterSpacing', v => `${v}px`],
       ['slantAngle',    v => `${v}°`],
       ['jitter',        v => `${v}%`],
+      ['baselineJitter',v => `${parseFloat(v).toFixed(1)}px`],
     ];
     for (const [key, fmt] of map) {
       if (sliders[key])      sliders[key].value         = options[key];
@@ -127,6 +131,7 @@
       ['letterSpacing', 'letterSpacing', v => `${Math.round(v)}px`,             parseInt],
       ['slantAngle',    'slantAngle',    v => `${Math.round(v)}°`,              parseInt],
       ['jitter',        'jitter',        v => `${Math.round(v)}%`,              parseInt],
+      ['baselineJitter','baselineJitter', v => `${parseFloat(v).toFixed(1)}px`,  parseFloat],
     ];
 
     for (const [sliderKey, optionKey, fmt, parse] of map) {

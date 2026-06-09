@@ -28,6 +28,7 @@
 - [x] Fix critical character bounds render crash (`getCharBounds` array matching).
 - [x] Draw full-page ruled college-block style lines (blue lines + red margin) on the preview canvas.
 - [x] Refine rendering engine for "digital ink" feel (uniform stroke widths, smooth character-level transformations: rotation, scaling, offsets) instead of high-frequency shaky point jitter.
+- [x] Add a **Baseline Jitter** slider to the editor to control how aligned or bouncy/wobbly individual letters are relative to the paper lines.
 - [x] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
 
 ### Phase 2: Deployment & Hosting
