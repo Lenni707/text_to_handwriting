@@ -28,8 +28,8 @@
 - [ ] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
 
 ### Phase 2: Deployment & Hosting
-- [ ] Initialize GitHub Repository.
-- [ ] Push local files to GitHub.
+- [x] Initialize GitHub Repository.
+- [x] Push local files to GitHub.
 - [ ] Configure GitHub Pages deployment.
 
 ### Phase 3: Future Enhancements (Post-Launch)
