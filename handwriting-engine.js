@@ -164,23 +164,103 @@ const HandwritingEngine = (() => {
     return { width: charWidth, firstStroke: charData[0], lastStroke: charData[charData.length - 1] };
   }
 
-  // Draw cursive connector from last point of previous char to first point of next char
-  function drawConnector(ctx, fromX, fromY, toX, toY, lineWidth, inkColor) {
+  // Predict the best exit connection point on a character's strokes
+  function getExitPoint(charData, bounds) {
+    if (!charData || charData.length === 0) return null;
+    let bestPt = null;
+    let maxScore = -Infinity;
+
+    for (const stroke of charData) {
+      if (!stroke || stroke.length === 0) continue;
+      // Exit point is usually the last point of a stroke
+      const pt = stroke[stroke.length - 1];
+      const normX = (pt.x - bounds.minX) / (bounds.w || 1);
+      const normY = pt.y;
+
+      let yScore = 1.0;
+      if (normY < 0.35) yScore = 0.1;       // penalize top accent marks/crossbars
+      else if (normY > 0.95) yScore = 0.2;  // penalize descender loops
+      else {
+        // favor typical middle-to-baseline heights (0.5 to 0.8)
+        yScore = 1.0 - Math.abs(normY - 0.65) * 1.5;
+      }
+
+      const score = normX * 1.8 + yScore;
+      if (score > maxScore) {
+        maxScore = score;
+        bestPt = pt;
+      }
+    }
+
+    if (!bestPt) {
+      const lastStroke = charData[charData.length - 1];
+      bestPt = lastStroke[lastStroke.length - 1];
+    }
+    return bestPt;
+  }
+
+  // Predict the best entry connection point on a character's strokes
+  function getEntryPoint(charData, bounds) {
+    if (!charData || charData.length === 0) return null;
+    let bestPt = null;
+    let maxScore = -Infinity;
+
+    for (const stroke of charData) {
+      if (!stroke || stroke.length === 0) continue;
+      // Entry point is usually the first point of a stroke
+      const pt = stroke[0];
+      const normX = (pt.x - bounds.minX) / (bounds.w || 1);
+      const normY = pt.y;
+
+      let yScore = 1.0;
+      if (normY < 0.35) yScore = 0.1;       // penalize top entries
+      else if (normY > 0.95) yScore = 0.2;  // penalize bottom descender loops
+      else {
+        // favor baseline entry heights (around 0.65-0.75)
+        yScore = 1.0 - Math.abs(normY - 0.7) * 1.5;
+      }
+
+      const score = (1.0 - normX) * 1.8 + yScore;
+      if (score > maxScore) {
+        maxScore = score;
+        bestPt = pt;
+      }
+    }
+
+    if (!bestPt) {
+      bestPt = charData[0][0];
+    }
+    return bestPt;
+  }
+
+  // Draw cursive connector with smart bridge vs cup curve heuristics
+  function drawConnector(ctx, fromX, fromY, toX, toY, lineWidth, inkColor, fromNormY = 0.7, toNormY = 0.7) {
     if (!fromX || !fromY || !toX || !toY) return;
     ctx.save();
     ctx.beginPath();
     ctx.strokeStyle = inkColor;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
-    ctx.globalAlpha = 0.75; // match digital ink opacity better
-    // Curved connector
-    const cpX = (fromX + toX) / 2;
-    const cpY = Math.max(fromY, toY) + lineWidth * 2;
+    ctx.globalAlpha = 0.75;
+
+    const dx = toX - fromX;
+    const cpX = fromX + dx * 0.5;
+
+    let cpY;
+    if (fromNormY < 0.55) {
+      // High exit (o, v, w, b) -> smooth downward bridge/slide curve
+      cpY = fromY + (toY - fromY) * 0.3;
+    } else {
+      // Baseline exit (a, c, d, etc.) -> natural baseline cup curve
+      cpY = Math.max(fromY, toY) + lineWidth * 2.8;
+    }
+
     ctx.moveTo(fromX, fromY);
     ctx.quadraticCurveTo(cpX, cpY, toX, toY);
     ctx.stroke();
     ctx.restore();
   }
+
 
   /**
    * Main render function.
@@ -301,6 +381,7 @@ const HandwritingEngine = (() => {
       let curX = paperPadding + 28; // after margin line
       let prevEndX = null;
       let prevEndY = null;
+      let prevNormY = null;
       let prevCh = null;
 
       for (let ci = 0; ci < line.length; ci++) {
@@ -310,6 +391,7 @@ const HandwritingEngine = (() => {
           curX += fontSize * 0.42 + (lineRng() - 0.5) * letterSpacing * 0.5;
           prevEndX = null;
           prevEndY = null;
+          prevNormY = null;
           prevCh = null;
           continue;
         }
@@ -327,34 +409,39 @@ const HandwritingEngine = (() => {
           const isPrevLetter = prevCh && /[a-zA-Z]/.test(prevCh);
           const isCurLetter = ch && /[a-zA-Z]/.test(ch);
           if (cursive && prevEndX !== null && isPrevLetter && isCurLetter) {
-            // Get start of current char
+            // Predict entry point of current character
             const bounds = getCharBounds(charData.flat());
             const scaleX = fontSize * (400 / 300);
             const scaleY = fontSize;
             const slantRad = (slantAngle * Math.PI) / 180;
-            const startPt = charData[0][0];
-            if (startPt) {
-              const lx = (startPt.x - bounds.minX) * scaleX;
-              const ly = (startPt.y - 0.7) * scaleY;
+            const entryPt = getEntryPoint(charData, bounds);
+            if (entryPt) {
+              const lx = (entryPt.x - bounds.minX) * scaleX;
+              const ly = (entryPt.y - 0.7) * scaleY;
               const toX = curX + lx + ly * Math.tan(slantRad);
               const toY = charY + ly;
-              drawConnector(ctx, prevEndX, prevEndY, toX, toY, fontSize * 0.025, inkColor);
+              // Pass the normal Y heights to calculate smart curve shapes
+              drawConnector(ctx, prevEndX, prevEndY, toX, toY, fontSize * 0.025 * strokeWidth, inkColor, prevNormY, entryPt.y);
             }
           }
 
-          // Track end point for cursive
+          // Track end point (exit point) for next cursive connection
           if (cursive) {
             const bounds = getCharBounds(charData.flat());
             const scaleX = fontSize * (400 / 300);
             const scaleY = fontSize;
             const slantRad = (slantAngle * Math.PI) / 180;
-            const lastStroke = charData[charData.length - 1];
-            if (lastStroke && lastStroke.length > 0) {
-              const lastPt = lastStroke[lastStroke.length - 1];
-              const lx_prev = (lastPt.x - bounds.minX) * scaleX;
-              const ly_prev = (lastPt.y - 0.7) * scaleY;
+            const exitPt = getExitPoint(charData, bounds);
+            if (exitPt) {
+              const lx_prev = (exitPt.x - bounds.minX) * scaleX;
+              const ly_prev = (exitPt.y - 0.7) * scaleY;
               prevEndX = curX + lx_prev + ly_prev * Math.tan(slantRad);
               prevEndY = charY + ly_prev;
+              prevNormY = exitPt.y;
+            } else {
+              prevEndX = null;
+              prevEndY = null;
+              prevNormY = null;
             }
           }
 
@@ -371,6 +458,7 @@ const HandwritingEngine = (() => {
           curX += fontSize * 0.55 + letterSpacing;
           prevEndX = null;
           prevEndY = null;
+          prevNormY = null;
           prevCh = null;
         }
       }

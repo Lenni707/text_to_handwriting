@@ -31,6 +31,7 @@
 - [x] Add a **Baseline Jitter** slider to the editor to control how aligned or bouncy/wobbly individual letters are relative to the paper lines.
 - [x] Add a **Pen Style** select dropdown allowing choice between **Digital Pen (Solid)**, **Fountain Pen (Smooth)**, and **Ballpoint Pen (Textured)**.
 - [x] Add a **Stroke Weight** slider to the editor (multiplier range `0.3x` to `3.0x`) to dynamically adjust pen line thickness independently from the font size.
+- [x] Rework the **Cursive Connectors** to smartly predict natural exit points (ignoring top accents/crossbars like in `t` or `f` and descender loops like in `g`) and natural entry points (leftmost points) of custom-drawn characters, adapting the connection curve shape based on connection height.
 - [x] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
 
 ### Phase 2: Deployment & Hosting
