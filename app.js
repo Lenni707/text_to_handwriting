@@ -98,7 +98,52 @@
     topBarControls.style.pointerEvents = 'auto';
   }
 
-  // ─── Options persistence ──────────────────────────────────────────────────
+  // ─── Color Conversion Helpers ──────────────────────────────────────────────
+  function hslToHex(h, s, l) {
+    l /= 100;
+    const a = (s * Math.min(l, 1 - l)) / 100;
+    const f = (n) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+
+  function hexToHsl(hex) {
+    let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+
+    let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return { h: 0, s: 0, l: 0 };
+
+    let r = parseInt(result[1], 16) / 255;
+    let g = parseInt(result[2], 16) / 255;
+    let b = parseInt(result[3], 16) / 255;
+
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      let d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return {
+      h: Math.round(h * 360),
+      s: Math.round(s * 100),
+      l: Math.round(l * 100)
+    };
+  }
+
   // ─── Options persistence ──────────────────────────────────────────────────
   function _applySavedOptions() {
     try {
@@ -156,6 +201,30 @@
         customTrigger.classList.remove('active');
         customTrigger.style.background = 'conic-gradient(red, yellow, green, cyan, blue, magenta, red)';
       }
+    }
+
+    // Update color wheel handle & brightness slider
+    const hsl = hexToHsl(color);
+    
+    const brightnessInput = document.getElementById('colorBrightness');
+    const brightnessValue = document.getElementById('valBrightness');
+    if (brightnessInput) {
+      brightnessInput.value = hsl.l;
+    }
+    if (brightnessValue) {
+      brightnessValue.textContent = `${hsl.l}%`;
+    }
+
+    const wheel = document.getElementById('colorWheel');
+    const handle = document.getElementById('colorWheelHandle');
+    if (wheel && handle) {
+      const R = 70; // Half of 140px width
+      const angleRad = (hsl.h - 90) * Math.PI / 180;
+      const dist = (hsl.s / 100) * R;
+      const x = R + dist * Math.cos(angleRad);
+      const y = R + dist * Math.sin(angleRad);
+      handle.style.left = `${x}px`;
+      handle.style.top = `${y}px`;
     }
   }
 
@@ -226,7 +295,7 @@
       });
     });
 
-    // Ink custom color picker
+    // Ink custom color picker (legacy support)
     const colorInput = document.getElementById('inputInkColor');
     if (colorInput) {
       const handleColorChange = () => {
@@ -238,6 +307,85 @@
       };
       colorInput.addEventListener('input', handleColorChange);
       colorInput.addEventListener('change', handleColorChange);
+    }
+
+    // Color Wheel Drag Event Listeners
+    const wheel = document.getElementById('colorWheel');
+    const brightnessInput = document.getElementById('colorBrightness');
+    const brightnessValue = document.getElementById('valBrightness');
+    let isDragging = false;
+
+    function updateColorFromCoords(clientX, clientY) {
+      const rect = wheel.getBoundingClientRect();
+      const R = rect.width / 2;
+      const centerX = rect.left + R;
+      const centerY = rect.top + R;
+
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const saturation = Math.min(100, Math.round((dist / R) * 100));
+
+      let angleDeg = Math.round(Math.atan2(dy, dx) * 180 / Math.PI) + 90;
+      if (angleDeg < 0) angleDeg += 360;
+      const hue = angleDeg;
+
+      const lightness = brightnessInput ? parseInt(brightnessInput.value, 10) : 30;
+      const hexColor = hslToHex(hue, saturation, lightness);
+
+      options.inkColor = hexColor;
+      _updateInkColorUI(hexColor);
+      _saveOptions();
+      _scheduleRender();
+    }
+
+    if (wheel) {
+      const onStart = (e) => {
+        isDragging = true;
+        const pointer = e.touches ? e.touches[0] : e;
+        updateColorFromCoords(pointer.clientX, pointer.clientY);
+        e.preventDefault();
+      };
+
+      const onMove = (e) => {
+        if (!isDragging) return;
+        const pointer = e.touches ? e.touches[0] : e;
+        updateColorFromCoords(pointer.clientX, pointer.clientY);
+        e.preventDefault();
+      };
+
+      const onEnd = () => {
+        isDragging = false;
+      };
+
+      wheel.addEventListener('mousedown', onStart);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
+
+      wheel.addEventListener('touchstart', onStart, { passive: false });
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
+    }
+
+    // Brightness Slider Event Listeners
+    if (brightnessInput) {
+      const handleBrightness = () => {
+        const lightness = parseInt(brightnessInput.value, 10);
+        if (brightnessValue) brightnessValue.textContent = `${lightness}%`;
+
+        // Update HSL lightness keeping existing hue/saturation
+        const currentHsl = hexToHsl(options.inkColor || '#1a2744');
+        const hexColor = hslToHex(currentHsl.h, currentHsl.s, lightness);
+
+        options.inkColor = hexColor;
+        _updateInkColorUI(hexColor);
+        _saveOptions();
+        _scheduleRender();
+      };
+
+      brightnessInput.addEventListener('input', handleBrightness);
+      brightnessInput.addEventListener('change', handleBrightness);
     }
   }
 
