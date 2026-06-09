@@ -25,7 +25,9 @@
 - [x] Initial app files created (HTML, CSS, JS, Engine).
 - [x] Add Pen Thickness slider in drawing wizard.
 - [x] Create a sample mock profile (`sample_profile.json`) for quick testing.
-- [ ] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
+- [x] Fix critical character bounds render crash (`getCharBounds` array matching).
+- [x] Draw full-page ruled college-block style lines (blue lines + red margin) on the preview canvas.
+- [x] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
 
 ### Phase 2: Deployment & Hosting
 - [x] Initialize GitHub Repository.

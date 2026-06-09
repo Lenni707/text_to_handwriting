@@ -79,11 +79,11 @@ const HandwritingEngine = (() => {
     };
   }
 
-  // Get bounding box of all strokes in a character
-  function getCharBounds(strokes) {
+  // Get bounding box of all points in a character
+  function getCharBounds(points) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const stroke of strokes) {
-      for (const pt of stroke) {
+    for (const pt of points) {
+      if (pt) {
         minX = Math.min(minX, pt.x);
         minY = Math.min(minY, pt.y);
         maxX = Math.max(maxX, pt.x);
@@ -197,7 +197,7 @@ const HandwritingEngine = (() => {
       const words = inputLine.split(' ');
       let currentLine = [];
       let currentWidth = 0;
-
+ 
       for (const word of words) {
         const wordChars = word.split('');
         let wordWidth = 0;
@@ -236,11 +236,12 @@ const HandwritingEngine = (() => {
     }
 
     if (showRules) {
-      // Draw ruled lines (light blue horizontal rules, like lined paper)
+      // Draw ruled lines simulating a block notepad (lines to the bottom)
       ctx.save();
-      ctx.strokeStyle = 'rgba(37, 99, 235, 0.08)';
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.15)'; // realistic college block blue lines
       ctx.lineWidth = 1;
-      for (let lineIdx = 0; lineIdx < renderLines.length + 2; lineIdx++) {
+      const numLines = Math.ceil((canvas.height - paperPadding) / lineHeight);
+      for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
         const lineY = paperPadding + lineIdx * lineHeight + fontSize * 0.85;
         ctx.beginPath();
         ctx.moveTo(paperPadding, lineY);
@@ -248,7 +249,7 @@ const HandwritingEngine = (() => {
         ctx.stroke();
       }
       // Left margin line
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.12)';
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.22)'; // realistic red margin line
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(paperPadding + 20, 0);
@@ -256,6 +257,7 @@ const HandwritingEngine = (() => {
       ctx.stroke();
       ctx.restore();
     }
+
 
     // Render each character
     let charSeedBase = 1;
