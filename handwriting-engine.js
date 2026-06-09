@@ -286,13 +286,31 @@ const HandwritingEngine = (() => {
     } = options;
 
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!text || !profile || !profile.characters) return;
+    if (!text || !profile || !profile.characters) {
+      // Clear canvas if empty text or invalid profile
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+      return;
+    }
+
+    const dpr = window.devicePixelRatio || 1;
+
+    // Get layout width (CSS pixels)
+    let layoutWidth = 700;
+    if (canvas.clientWidth) {
+      layoutWidth = canvas.clientWidth;
+    } else if (canvas.style.width) {
+      layoutWidth = parseFloat(canvas.style.width);
+    } else {
+      layoutWidth = canvas.width > 0 ? canvas.width / dpr : 700;
+    }
 
     const chars = profile.characters;
     const lineHeight = fontSize * lineSpacing;
-    const maxWidth = canvas.width - paperPadding * 2;
+    const maxWidth = layoutWidth - paperPadding * 2;
 
     // Tokenize text into lines (split on \n), then wrap long lines
     const inputLines = text.split('\n');
@@ -338,24 +356,41 @@ const HandwritingEngine = (() => {
       }
     }
 
-    // Compute total height needed
+    // Compute total height needed (CSS pixels)
     const totalHeight = paperPadding * 2 + renderLines.length * lineHeight + fontSize;
-    if (canvas.height !== totalHeight) {
-      canvas.height = Math.max(totalHeight, 200);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const layoutHeight = Math.max(totalHeight, 200);
+
+    // Only update backing store size if it has changed
+    const targetBackingWidth = Math.round(layoutWidth * dpr);
+    const targetBackingHeight = Math.round(layoutHeight * dpr);
+
+    if (canvas.width !== targetBackingWidth || canvas.height !== targetBackingHeight) {
+      canvas.width = targetBackingWidth;
+      canvas.height = targetBackingHeight;
+      canvas.style.width = layoutWidth + 'px';
+      canvas.style.height = layoutHeight + 'px';
     }
+
+    // Set up Retina scaling and clear the canvas
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
 
     if (showRules) {
       // Draw ruled lines simulating a block notepad (lines to the bottom)
       ctx.save();
       ctx.strokeStyle = 'rgba(37, 99, 235, 0.15)'; // realistic college block blue lines
       ctx.lineWidth = 1;
-      const numLines = Math.ceil((canvas.height - paperPadding) / lineHeight);
+      const numLines = Math.ceil((layoutHeight - paperPadding) / lineHeight);
       for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
         const lineY = paperPadding + lineIdx * lineHeight + fontSize * 0.85;
         ctx.beginPath();
         ctx.moveTo(paperPadding, lineY);
-        ctx.lineTo(canvas.width - paperPadding, lineY);
+        ctx.lineTo(layoutWidth - paperPadding, lineY);
         ctx.stroke();
       }
       // Left margin line
@@ -363,7 +398,7 @@ const HandwritingEngine = (() => {
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(paperPadding + 20, 0);
-      ctx.lineTo(paperPadding + 20, canvas.height);
+      ctx.lineTo(paperPadding + 20, layoutHeight);
       ctx.stroke();
       ctx.restore();
     }
@@ -463,6 +498,8 @@ const HandwritingEngine = (() => {
         }
       }
     }
+
+    ctx.restore();
   }
 
   return { render };

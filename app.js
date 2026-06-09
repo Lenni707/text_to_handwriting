@@ -99,6 +99,7 @@
   }
 
   // ─── Options persistence ──────────────────────────────────────────────────
+  // ─── Options persistence ──────────────────────────────────────────────────
   function _applySavedOptions() {
     try {
       const saved = JSON.parse(localStorage.getItem('hwp_options') || '{}');
@@ -125,6 +126,37 @@
 
     const penStyleSelect = document.getElementById('selectPenStyle');
     if (penStyleSelect) penStyleSelect.value = options.penStyle || 'digital';
+
+    _updateInkColorUI(options.inkColor || '#1a2744');
+  }
+
+  function _updateInkColorUI(color) {
+    const presets = document.querySelectorAll('.color-preset[data-color]');
+    let foundPreset = false;
+    presets.forEach(p => {
+      if (p.getAttribute('data-color').toLowerCase() === color.toLowerCase()) {
+        p.classList.add('active');
+        foundPreset = true;
+      } else {
+        p.classList.remove('active');
+      }
+    });
+
+    const customTrigger = document.getElementById('btnCustomColor');
+    const colorInput = document.getElementById('inputInkColor');
+    if (colorInput) {
+      colorInput.value = color;
+    }
+
+    if (customTrigger) {
+      if (!foundPreset) {
+        customTrigger.classList.add('active');
+        customTrigger.style.background = color;
+      } else {
+        customTrigger.classList.remove('active');
+        customTrigger.style.background = 'conic-gradient(red, yellow, green, cyan, blue, magenta, red)';
+      }
+    }
   }
 
   function _saveOptions() {
@@ -181,6 +213,32 @@
         _scheduleRender();
       });
     }
+
+    // Ink color presets
+    const presets = document.querySelectorAll('.color-preset[data-color]');
+    presets.forEach(p => {
+      p.addEventListener('click', () => {
+        const color = p.getAttribute('data-color');
+        options.inkColor = color;
+        _updateInkColorUI(color);
+        _saveOptions();
+        _scheduleRender();
+      });
+    });
+
+    // Ink custom color picker
+    const colorInput = document.getElementById('inputInkColor');
+    if (colorInput) {
+      const handleColorChange = () => {
+        const color = colorInput.value;
+        options.inkColor = color;
+        _updateInkColorUI(color);
+        _saveOptions();
+        _scheduleRender();
+      };
+      colorInput.addEventListener('input', handleColorChange);
+      colorInput.addEventListener('change', handleColorChange);
+    }
   }
 
   // ─── Text Input ────────────────────────────────────────────────────────────
@@ -232,8 +290,8 @@
       const padding = 64;
       const maxW = Math.min(wrap.clientWidth - padding * 2, 900);
       const targetW = Math.floor(Math.max(maxW, 400));
-      if (outputCanvas.width !== targetW) {
-        outputCanvas.width = targetW;
+      if (outputCanvas.style.width !== `${targetW}px`) {
+        outputCanvas.style.width = `${targetW}px`;
       }
     }
 
