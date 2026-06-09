@@ -24,6 +24,7 @@
     slantAngle: -5,
     jitter: 30,
     baselineJitter: 3,
+    penStyle: 'digital',
     inkColor: '#1a2744',
     cursive: false,
   };
@@ -117,6 +118,9 @@
 
     const cursiveToggle = document.getElementById('toggleCursive');
     if (cursiveToggle) cursiveToggle.checked = !!options.cursive;
+
+    const penStyleSelect = document.getElementById('selectPenStyle');
+    if (penStyleSelect) penStyleSelect.value = options.penStyle || 'digital';
   }
 
   function _saveOptions() {
@@ -158,6 +162,16 @@
     if (cursiveToggle) {
       cursiveToggle.addEventListener('change', () => {
         options.cursive = cursiveToggle.checked;
+        _saveOptions();
+        _scheduleRender();
+      });
+    }
+
+    // Pen style select
+    const penStyleSelect = document.getElementById('selectPenStyle');
+    if (penStyleSelect) {
+      penStyleSelect.addEventListener('change', () => {
+        options.penStyle = penStyleSelect.value;
         _saveOptions();
         _scheduleRender();
       });

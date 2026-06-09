@@ -17,15 +17,17 @@ const HandwritingEngine = (() => {
   }
 
   // Smooth a polyline with bezier curves
-  function drawSmoothStroke(ctx, points, lineWidth, color) {
+  function drawSmoothStroke(ctx, points, lineWidth, color, penStyle = 'digital') {
     if (!points || points.length === 0) return;
 
     if (points.length === 1) {
       ctx.save();
       ctx.beginPath();
       ctx.fillStyle = color;
-      const r = Math.max(0.5, (lineWidth * (points[0].pressure || 0.5)) / 2);
-      ctx.arc(points[0].x, points[0].y, r, 0, Math.PI * 2);
+      const pt = points[0];
+      const p = penStyle === 'digital' ? 1.0 : (pt.pressure || 0.5);
+      const r = Math.max(0.5, (lineWidth * p) / 2);
+      ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
       return;
@@ -37,7 +39,8 @@ const HandwritingEngine = (() => {
     ctx.lineJoin = 'round';
 
     if (points.length === 2) {
-      ctx.lineWidth = lineWidth * (points[0].pressure || 0.5);
+      const p = penStyle === 'digital' ? 1.0 : (points[0].pressure || 0.5);
+      ctx.lineWidth = lineWidth * p;
       ctx.moveTo(points[0].x, points[0].y);
       ctx.lineTo(points[1].x, points[1].y);
       ctx.stroke();
@@ -57,11 +60,19 @@ const HandwritingEngine = (() => {
       const cp2x = p2.x - (p3.x - p1.x) / 6;
       const cp2y = p2.y - (p3.y - p1.y) / 6;
 
-      // Pressure interpolation: clean, digital feel with subtle weight variation
+      // Pressure interpolation based on selected style
       const t = points.length > 2 ? i / (points.length - 2) : 0.5;
       const pressureBell = Math.sin(Math.PI * t);
       const p = (p1.pressure || 0.5);
-      const pressure = 0.85 + (p - 0.5) * 0.3 + pressureBell * 0.15;
+      
+      let pressure = 1.0;
+      if (penStyle === 'fountain') {
+        pressure = 0.75 + (p - 0.5) * 0.4 + pressureBell * 0.2;
+      } else if (penStyle === 'ballpoint') {
+        pressure = 0.55 + (p - 0.5) * 0.65 + pressureBell * 0.35;
+      } else { // 'digital'
+        pressure = 0.96 + (p - 0.5) * 0.08; // extremely clean and consistent
+      }
 
       ctx.beginPath();
       ctx.lineWidth = Math.max(0.5, lineWidth * pressure);
@@ -95,7 +106,7 @@ const HandwritingEngine = (() => {
   }
 
   // Draw a single character's strokes onto the context at position (x, y)
-  function renderChar(ctx, charData, x, y, fontSize, slantAngle, jitterAmount, inkColor, charSeed) {
+  function renderChar(ctx, charData, x, y, fontSize, slantAngle, jitterAmount, inkColor, charSeed, penStyle = 'digital') {
     if (!charData || charData.length === 0) return { width: fontSize * 0.55 };
 
     const rng = seededRandom(charSeed);
@@ -145,7 +156,7 @@ const HandwritingEngine = (() => {
         };
       });
 
-      drawSmoothStroke(ctx, transformed, fontSize * 0.038, inkColor);
+      drawSmoothStroke(ctx, transformed, fontSize * 0.038, inkColor, penStyle);
     }
 
     ctx.restore();
@@ -186,6 +197,7 @@ const HandwritingEngine = (() => {
       slantAngle = -5,
       jitter = 20,
       baselineJitter = 3,
+      penStyle = 'digital',
       inkColor = '#1a2744',
       cursive = false,
       paperPadding = 48,
@@ -307,7 +319,7 @@ const HandwritingEngine = (() => {
         const charSeed = charSeedBase++ + ch.charCodeAt(0) * 31;
 
         if (charData && charData.length > 0) {
-          const result = renderChar(ctx, charData, curX, charY, fontSize, slantAngle, jitter / 25, inkColor, charSeed);
+          const result = renderChar(ctx, charData, curX, charY, fontSize, slantAngle, jitter / 25, inkColor, charSeed, penStyle);
           const charW = result.width;
 
           // Cursive connectors
