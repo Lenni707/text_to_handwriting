@@ -441,8 +441,8 @@ const HandwritingEngine = (() => {
           const charW = result.width;
 
           // Cursive connectors
-          const isPrevLetter = prevCh && /[a-zA-Z]/.test(prevCh);
-          const isCurLetter = ch && /[a-zA-Z]/.test(ch);
+          const isPrevLetter = prevCh && /[a-zA-ZäöüßÄÖÜ]/.test(prevCh);
+          const isCurLetter = ch && /[a-zA-ZäöüßÄÖÜ]/.test(ch);
           if (cursive && prevEndX !== null && isPrevLetter && isCurLetter) {
             // Predict entry point of current character
             const bounds = getCharBounds(charData.flat());

@@ -7,8 +7,8 @@
 const SetupWizard = (() => {
   // Characters to draw in order
   const CHARACTER_SET = [
-    ...'abcdefghijklmnopqrstuvwxyz'.split(''),
-    ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+    ...'abcdefghijklmnopqrstuvwxyzäöüß'.split(''),
+    ...'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split(''),
     ...'0123456789'.split(''),
     ...['.',  ',', '!', '?', "'", '"', '-', '(', ')', ':'],
   ];
