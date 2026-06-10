@@ -604,7 +604,6 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   display: block;
   position: relative;
   z-index: 2;
-  transition: opacity 0.15s ease;
 }
 
 /* ─── Empty State ────────────────────────────────────────────────────────── */

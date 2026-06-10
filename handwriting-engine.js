@@ -296,17 +296,11 @@ const HandwritingEngine = (() => {
       return;
     }
 
-    const dpr = window.devicePixelRatio || 1;
+    // Use a minimum DPR of 2 for super-sampling (renders ultra-sharp even on non-Retina displays)
+    const dpr = Math.max(2, window.devicePixelRatio || 1);
 
-    // Get layout width (CSS pixels)
-    let layoutWidth = 700;
-    if (canvas.clientWidth) {
-      layoutWidth = canvas.clientWidth;
-    } else if (canvas.style.width) {
-      layoutWidth = parseFloat(canvas.style.width);
-    } else {
-      layoutWidth = canvas.width > 0 ? canvas.width / dpr : 700;
-    }
+    // Get layout width (CSS pixels, rounded to prevent subpixel scaling blur)
+    const layoutWidth = Math.round(options.width || canvas.clientWidth || 700);
 
     const chars = profile.characters;
     const lineHeight = fontSize * lineSpacing;
@@ -356,20 +350,22 @@ const HandwritingEngine = (() => {
       }
     }
 
-    // Compute total height needed (CSS pixels)
+    // Compute total height needed (CSS pixels, rounded to prevent subpixel scaling blur)
     const totalHeight = paperPadding * 2 + renderLines.length * lineHeight + fontSize;
-    const layoutHeight = Math.max(totalHeight, 200);
+    const layoutHeight = Math.round(Math.max(totalHeight, 200));
 
-    // Only update backing store size if it has changed
+    // Only update backing store size if it has changed to prevent resetting the context
     const targetBackingWidth = Math.round(layoutWidth * dpr);
     const targetBackingHeight = Math.round(layoutHeight * dpr);
 
     if (canvas.width !== targetBackingWidth || canvas.height !== targetBackingHeight) {
       canvas.width = targetBackingWidth;
       canvas.height = targetBackingHeight;
-      canvas.style.width = layoutWidth + 'px';
-      canvas.style.height = layoutHeight + 'px';
     }
+
+    // Always enforce exact matching CSS styles to prevent browser interpolation blur
+    canvas.style.width = layoutWidth + 'px';
+    canvas.style.height = layoutHeight + 'px';
 
     // Set up Retina scaling and clear the canvas
     ctx.save();

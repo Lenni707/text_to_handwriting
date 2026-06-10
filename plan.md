@@ -16,7 +16,7 @@
   - Added support for German letters (`ä`, `ö`, `ü`, `ß` and uppercase `Ä`, `Ö`, `Ü`) across the entire pipeline: Setup Wizard drawing steps, cursive connector regex rules, and predefined hand-drawn strokes in `sample_profile.json`.
   - Added an interactive **HEX code input field** to display and directly type hexadecimal values to change the ink color in real-time.
   - Added a **Copy to Clipboard** option that exports a high-quality transparent PNG of the rendered handwriting directly to the system clipboard for immediate pasting without downloading files.
-  - Fixed handwriting rendering blurriness by implementing High-DPI/Retina display scaling (using `window.devicePixelRatio` and canvas context transforms) on the preview canvas and downloaded image exports.
+  - Fixed handwriting rendering blurriness by implementing High-DPI/Retina display scaling (minimum 2x super-sampling), integer-rounding layout dimensions, and removing CSS opacity transition triggers to prevent compositor-induced subpixel blurring.
   - Added an **Ink Color** selection panel featuring 5 color presets and a custom color picker button (styled with a conic-gradient rainbow circle), saving selections to `localStorage`.
   - Added a **Pen Thickness Slider** (range 1–12px) in the Setup Wizard to customize base pen width during handwriting recording.
   - Fixed stroke width rendering inside both live recording canvas and playback loops to honor the selected pen thickness.

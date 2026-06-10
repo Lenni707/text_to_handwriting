@@ -314,25 +314,15 @@
 
     // Size the canvas to the available scroll-wrap width
     const wrap = document.querySelector('.canvas-scroll-wrap');
+    let targetW = 700;
     if (wrap) {
       const padding = 64;
       const maxW = Math.min(wrap.clientWidth - padding * 2, 900);
-      const targetW = Math.floor(Math.max(maxW, 400));
-      if (outputCanvas.style.width !== `${targetW}px`) {
-        outputCanvas.style.width = `${targetW}px`;
-      }
+      targetW = Math.floor(Math.max(maxW, 400));
     }
 
-    // Animate fade
-    outputCanvas.style.opacity    = '0';
-    outputCanvas.style.transition = 'opacity 0.15s ease';
-
-    requestAnimationFrame(() => {
-      HandwritingEngine.render(outputCanvas, text, activeProfile, options);
-      requestAnimationFrame(() => {
-        outputCanvas.style.opacity = '1';
-      });
-    });
+    // Render immediately without opacity transitions to prevent browser scaling blur
+    HandwritingEngine.render(outputCanvas, text, activeProfile, { ...options, width: targetW });
   }
 
   // ─── Profile Select ────────────────────────────────────────────────────────

@@ -371,27 +371,13 @@
     e.target.value = '';
   });
 
-  // ─── Paper canvas sizing ─────────────────────────────────────────────────
-  function sizeOutputCanvas() {
-    const wrap = document.querySelector('.canvas-scroll-wrap');
-    const canvas = document.getElementById('outputCanvas');
-    if (!wrap || !canvas) return;
-    const padding = 64;
-    const maxW = Math.min(wrap.clientWidth - padding * 2, 900);
-    const targetW = Math.floor(Math.max(maxW, 400));
-    if (canvas.style.width !== `${targetW}px`) {
-      canvas.style.width = `${targetW}px`;
-    }
-  }
-
+  // ─── Resize / Load Sizing Trigger ─────────────────────────────────────────
   window.addEventListener('resize', () => {
-    sizeOutputCanvas();
-    // Trigger re-render
     if (window._appScheduleRender) window._appScheduleRender();
   });
 
   window.addEventListener('load', () => {
-    sizeOutputCanvas();
+    if (window._appScheduleRender) window._appScheduleRender();
   });
 </script>
 
