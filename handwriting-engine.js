@@ -90,6 +90,40 @@ const HandwritingEngine = (() => {
     };
   }
 
+  function pickVariant(rng, jitterAmount) {
+    const strength = Math.min(1.25, Math.max(0, jitterAmount));
+    return {
+      waistX: (rng() - 0.5) * 0.08 * strength,
+      waistY: (rng() - 0.5) * 0.045 * strength,
+      shoulder: (rng() - 0.5) * 0.055 * strength,
+      bowl: (rng() - 0.5) * 0.06 * strength,
+      strokeLift: (rng() - 0.5) * 0.035 * strength,
+      strokeLean: (rng() - 0.5) * 0.05 * strength,
+      pressureBias: 1 + (rng() - 0.5) * 0.14 * strength,
+    };
+  }
+
+  function warpPointForVariant(pt, bounds, variant) {
+    const normX = bounds.w ? (pt.x - bounds.minX) / bounds.w : 0.5;
+    const normY = bounds.h ? (pt.y - bounds.minY) / bounds.h : pt.y;
+    const centerX = normX - 0.5;
+    const centerY = normY - 0.5;
+    const arch = Math.sin(Math.PI * Math.max(0, Math.min(1, normY)));
+    const bowl = Math.sin(Math.PI * Math.max(0, Math.min(1, normX)));
+
+    return {
+      x: pt.x
+        + centerY * variant.waistX
+        + arch * variant.shoulder
+        + centerX * centerX * variant.bowl,
+      y: pt.y
+        + centerX * variant.waistY
+        + bowl * variant.strokeLift
+        + centerX * variant.strokeLean,
+      pressure: pt.pressure,
+    };
+  }
+
   // Get bounding box of all points in a character
   function getCharBounds(points) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -121,6 +155,7 @@ const HandwritingEngine = (() => {
     const scaleXVar = 1.0 + (rng() - 0.5) * jitterAmount * 0.08;
     const scaleYVar = 1.0 + (rng() - 0.5) * jitterAmount * 0.08;
     const rotateVar = (rng() - 0.5) * jitterAmount * 0.05; // radians
+    const variant = pickVariant(rng, jitterAmount);
 
     const charWidth = Math.max(bounds.w * scaleX * scaleXVar, fontSize * 0.25);
     const slantRad = (slantAngle * Math.PI) / 180;
@@ -137,9 +172,10 @@ const HandwritingEngine = (() => {
 
       // Transform normalized coords with character-level rotation & scaling
       const transformed = stroke.map((pt) => {
+        const warped = warpPointForVariant(pt, bounds, variant);
         // 1. Initial scale from normalized space
-        const sxRaw = (pt.x - bounds.minX) * scaleX * scaleXVar;
-        const syRaw = (pt.y - 0.7) * scaleY * scaleYVar;
+        const sxRaw = (warped.x - bounds.minX) * scaleX * scaleXVar;
+        const syRaw = (warped.y - 0.7) * scaleY * scaleYVar;
 
         // 2. Rotate around character anchor point
         const rx = sxRaw * cosR - syRaw * sinR;
@@ -152,7 +188,7 @@ const HandwritingEngine = (() => {
         return {
           x: jp.x,
           y: jp.y,
-          pressure: pt.pressure !== undefined ? pt.pressure : 0.6,
+          pressure: (pt.pressure !== undefined ? pt.pressure : 0.6) * variant.pressureBias,
         };
       });
 

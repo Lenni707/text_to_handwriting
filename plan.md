@@ -14,6 +14,7 @@
 
 - **Recent Updates**:
   - Added support for German letters (`ä`, `ö`, `ü`, `ß` and uppercase `Ä`, `Ö`, `Ü`) across the entire pipeline: Setup Wizard drawing steps, cursive connector regex rules, and predefined hand-drawn strokes in `sample_profile.json`.
+  - Added subtle deterministic per-letter shape variation in the renderer so repeated letters vary in shoulder/bowl shape, lean, lift, and pressure while preserving existing profile data and controls.
   - Added an interactive **HEX code input field** to display and directly type hexadecimal values to change the ink color in real-time.
   - Added a **Copy to Clipboard** option that exports a high-quality transparent PNG of the rendered handwriting directly to the system clipboard for immediate pasting without downloading files.
   - Fixed handwriting rendering blurriness by implementing High-DPI/Retina display scaling (minimum 2x super-sampling), integer-rounding layout dimensions, and removing CSS opacity transition triggers to prevent compositor-induced subpixel blurring.
@@ -42,6 +43,7 @@
 - [x] Add a **Copy to Clipboard** option to copy transparent PNGs directly instead of exporting to file.
 - [x] Implement manual testing & validation of line wrap, slant, and spacing constraints locally.
 - [x] Add support for German characters (ä, ö, ü, ß, Ä, Ö, Ü) and double-quote (") in setup wizard, default profile, and renderer.
+- [x] Add subtle generated letter-shape variation for more realistic repeated characters without changing profile storage.
 
 ### Phase 2: Deployment & Hosting
 - [x] Initialize GitHub Repository.
